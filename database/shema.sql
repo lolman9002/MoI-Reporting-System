@@ -69,7 +69,7 @@ CREATE TABLE [dbo].[Attachment] (
 );
 GO
 
--- Operational indexes (as before)
+-- Operational indexes 
 CREATE NONCLUSTERED INDEX [IX_User_Role] ON [dbo].[User] ([role]) INCLUDE ([userId], [isAnonymous]);
 CREATE NONCLUSTERED INDEX [IX_User_HashedDeviceId] ON [dbo].[User] ([hashedDeviceId]) WHERE [hashedDeviceId] IS NOT NULL;
 CREATE NONCLUSTERED INDEX [IX_Report_Status] ON [dbo].[Report] ([status]) INCLUDE ([reportId], [title], [createdAt]);
