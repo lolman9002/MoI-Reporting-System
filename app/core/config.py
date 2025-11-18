@@ -65,9 +65,9 @@ class AzureKeyVaultManager:
 
     def load_secrets_to_settings(self, settings: Settings) -> Settings:
         secrets_mapping = {
-            "database-connection-string": "DATABASE_CONNECTION_STRING",
-            "blob-storage-connection-string": "BLOB_STORAGE_CONNECTION_STRING",
-            "jwt-secret-key": "SECRET_KEY",
+            "DatabaseConnectionString": "DATABASE_CONNECTION_STRING",
+            "BlobStorageConnectionString": "BLOB_STORAGE_CONNECTION_STRING",
+            "SecretKey": "SECRET_KEY",
         }
 
         for secret_name, setting_name in secrets_mapping.items():
