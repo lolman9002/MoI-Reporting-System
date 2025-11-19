@@ -1614,11 +1614,6 @@ jobs:
 - [Azure SQL with Python](https://docs.microsoft.com/azure/azure-sql/database/connect-query-python)
 - [Azure Key Vault with Python](https://docs.microsoft.com/azure/key-vault/general/developers-guide)
 
-### Community
-- **GitHub Discussions**: [Link to your repo discussions]
-- **Stack Overflow**: Tag `moi-reporting-system`
-- **Team Slack**: [Your Slack channel]
-
 ---
 
 ## 👥 Team
@@ -1627,11 +1622,11 @@ jobs:
 
 | Name | Role | Responsibilities |
 |------|------|-----------------|
-| Ahmed Yasser Mohamed Ali | Backend Lead | FastAPI, Database Design |
+| Mazen Abdelraheem Mohamed Othman | DevOps Engineer & Data Scientist |ETL, CI/CD, DataBase schemas, FastAPI,API Development , Services Layer , project Structure|
+| Ahmed Yasser Mohamed Ali | Backend Lead & Data Engineer|ETL, CI/CD, FastAPI, Database Design,API Development , Services Layer|
 | Salem Yasser Salem Ahmed | Data Engineer | ETL, Analytics DB |
 | Omar Akram Ahmed El-Sayed | Backend Developer | API Development |
-| Mazen Abdulraheem Mohamed Othman | DevOps Engineer | Deployment, CI/CD |
-| Mohamed Sayed Mohamed Eldhdahy | Backend Developer | Services Layer |
+| Mohamed Sayed Mohamed Eldhdahy | Backend Developer | Services Layer  |
 | Moemen Abdelmonem Ibrahem Mohamed | QA Engineer | Testing, Documentation |
 
 ---
