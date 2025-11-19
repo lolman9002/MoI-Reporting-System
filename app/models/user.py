@@ -1,19 +1,24 @@
 from sqlalchemy import Column, String, Boolean, DateTime, func
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
-
 class User(Base):
-    __tablename__ = "User"  # Matches UML Class Diagram
+    __tablename__ = "User"  # Matches SQL table name exactly
 
-    userId = Column(String(450), primary_key=True, index=True)
-    isAnonymous = Column(Boolean, nullable=False, default=False)
-    createdAt = Column(DateTime, nullable=False, server_default=func.now())
-    role = Column(String(50), nullable=False, default="citizen")
+    # Primary Key - matches [userId] in SQL
+    userId = Column(String(450), primary_key=True, index=True, name="userId")
     
-    # Nullable for anonymous users; unique when provided
-    email = Column(String(256), nullable=True, unique=True)
-    phoneNumber = Column(String(20), nullable=True, unique=True)
-    hashedDeviceId = Column(String(256), nullable=True, unique=True)
+    # Attributes - match SQL column names exactly
+    isAnonymous = Column(Boolean, nullable=False, default=False, name="isAnonymous")
+    createdAt = Column(DateTime, nullable=False, server_default=func.getutcdate(), name="createdAt")
+    role = Column(String(50), nullable=False, default="citizen", name="role")
+    
+    email = Column(String(256), nullable=True, name="email")
+    phoneNumber = Column(String(20), nullable=True, name="phoneNumber")
+    hashedDeviceId = Column(String(256), nullable=True, name="hashedDeviceId")
+
+    # Relationships - use string references to avoid circular import
+    reports = relationship("Report", back_populates="user")
 
     def __repr__(self):
-        return f"<User(id={self.userId}, anonymous={self.isAnonymous}, role={self.role})>"
+        return f"<User(userId={self.userId}, isAnonymous={self.isAnonymous}, role={self.role})>"

@@ -2,19 +2,28 @@ from sqlalchemy import Column, String, BigInteger, ForeignKey
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
-
 class Attachment(Base):
-    __tablename__ = "attachments"  # or "Attachment" if strictly following UML
+    __tablename__ = "Attachment"  # Matches SQL table name exactly
 
-    attachment_id = Column(String(450), primary_key=True, index=True)
-    report_id = Column(String(450), ForeignKey("reports.report_id", ondelete="CASCADE"), nullable=False)
-    blob_storage_uri = Column(String(2048), nullable=False)
-    mime_type = Column(String(100), nullable=False)
-    file_type = Column(String(50), nullable=False)
-    file_size_bytes = Column(BigInteger, nullable=False)
+    # Primary Key - matches [attachmentId] in SQL
+    attachmentId = Column(String(450), primary_key=True, index=True, name="attachmentId")
+    
+    # Foreign Key - matches [reportId] in SQL and references Report.reportId
+    reportId = Column(
+        String(450), 
+        ForeignKey("Report.reportId", ondelete="CASCADE"), 
+        nullable=False,
+        name="reportId"
+    )
+    
+    # Metadata Columns - match SQL column names exactly
+    blobStorageUri = Column(String(2048), nullable=False, name="blobStorageUri")
+    mimeType = Column(String(100), nullable=False, name="mimeType")
+    fileType = Column(String(50), nullable=False, name="fileType")
+    fileSizeBytes = Column(BigInteger, nullable=False, name="fileSizeBytes")
 
-    # Relationship
+    # Relationship - use string reference
     report = relationship("Report", back_populates="attachments")
 
     def __repr__(self):
-        return f"<Attachment(id={self.attachment_id}, report_id={self.report_id}, type={self.file_type})>"
+        return f"<Attachment(attachmentId={self.attachmentId}, reportId={self.reportId}, fileType={self.fileType})>"

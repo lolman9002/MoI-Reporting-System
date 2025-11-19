@@ -4,7 +4,8 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from contextlib import asynccontextmanager
 from sqlalchemy import text
 import logging
-
+# Import all models to register them with SQLAlchemy
+from app.models import Base, User, Report, Attachment
 from app.core.config import get_settings
 from app.core.database import engine  # This is your Synchronous Engine
 from app.api.v1 import reports        # Your API Router

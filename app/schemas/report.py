@@ -1,10 +1,18 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
-# Import attachment schemas to nest them inside reports
-from app.schemas.attachment import AttachmentCreate, AttachmentResponse
+# --- MOCK/PLACEHOLDER ATTACHMENT SCHEMAS (Assumed structure for nested reports) ---
+class AttachmentCreate(BaseModel):
+    blobStorageUri: str = Field(..., description="URI to the stored blob file.")
+    mimeType: str = Field(..., description="MIME type of the file.")
+    fileType: str = Field(..., description="Classification of the file (e.g., Image, Video, Document).")
+    fileSizeBytes: int = Field(..., description="Size of the file in bytes.")
+    
+class AttachmentResponse(AttachmentCreate):
+    attachmentId: str
+    reportId: str
 
 # Enums must match your SQL constraints exactly
 class ReportStatus(str, Enum):
@@ -23,7 +31,7 @@ class ReportCategory(str, Enum):
     ENVIRONMENTAL = "environmental"
     OTHER = "other"
 
-# Base schema with common fields
+# Base schema with common fields (using ORM snake_case mapping)
 class ReportBase(BaseModel):
     title: str = Field(..., min_length=3, max_length=500)
     descriptionText: str = Field(..., min_length=10)
@@ -31,15 +39,20 @@ class ReportBase(BaseModel):
     # Optional in Base because AI might fill it later, 
     # but usually required for display.
     categoryId: Optional[ReportCategory] = None 
+    
+    # Configuration for camelCase in/out and ORM compatibility
+    model_config = ConfigDict(
+        alias_generator=lambda field_name: field_name, # Not using alias generator here
+        populate_by_name=True,
+        from_attributes=True
+    )
 
 # Schema for CREATING a report (Input)
 class ReportCreate(ReportBase):
-    # [cite_start]REPLACED latitude/longitude with text/link string [cite: 41]
     location: str = Field(..., description="Physical address, landmark, or Google Maps link")
     
     transcribedVoiceText: Optional[str] = None
     
-    # [cite_start]Anonymous Reporting Fields [cite: 34]
     isAnonymous: bool = Field(False, description="True if user wants to remain anonymous")
     hashedDeviceId: Optional[str] = Field(None, description="Required if isAnonymous=True for tracking")
     
@@ -61,6 +74,7 @@ class ReportStatusUpdate(BaseModel):
 
 # Schema for READING a report (Output)
 class ReportResponse(ReportBase):
+    # Field names explicitly defined as camelCase for JSON output
     reportId: str
     status: ReportStatus
     location: str  # Matches [locationRaw] in DB
@@ -73,10 +87,25 @@ class ReportResponse(ReportBase):
     # Returns full attachment objects
     attachments: List[AttachmentResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes = True,
+        # Configure Pydantic to map snake_case ORM attributes to camelCase response fields
+        alias_generator=lambda field_name: {
+            "report_id": "reportId",
+            "category_id": "categoryId",
+            "location_raw": "location",
+            "created_at": "createdAt",
+            "updated_at": "updatedAt",
+            "user_id": "userId",
+            "description_text": "descriptionText",
+            "ai_confidence": "aiConfidence",
+            "transcribed_voice_text": "transcribedVoiceText",
+            "hashed_device_id": "hashedDeviceId",
+        }.get(field_name, field_name),
+        populate_by_name=True
+    )
 
-# --- NEW: Schema for LIST responses (Required by your API) ---
+# --- NEW: Schema for LIST responses ---
 class ReportListResponse(BaseModel):
     reports: List[ReportResponse]
     total: int

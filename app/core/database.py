@@ -1,49 +1,49 @@
-# app/core/database.py
-
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.pool import AsyncAdaptedQueuePool
-import urllib.parse
+from sqlalchemy.orm import declarative_base
 from typing import AsyncGenerator
+import urllib.parse
 
 from app.core.config import get_settings
 
 settings = get_settings()
 
-# URL-encode the connection string (Azure SQL uses ODBC)
+# URL-encode the connection string
 params = urllib.parse.quote_plus(settings.DATABASE_CONNECTION_STRING)
+
+# Use aioodbc for async ODBC connections
 DATABASE_URL = f"mssql+aioodbc:///?odbc_connect={params}"
 
-# Async engine for Azure SQL
+# Create async engine
 engine = create_async_engine(
     DATABASE_URL,
     echo=settings.DEBUG,
-    poolclass=AsyncAdaptedQueuePool,
-    pool_size=10,
-    max_overflow=20,
     pool_pre_ping=True,
-    connect_args={
-        "timeout": 30,
-        "command_timeout": 30,
-        "autocommit": False,
-    }
+    pool_size=5,
+    max_overflow=10,
+    pool_recycle=3600,  # Recycle connections after 1 hour
 )
 
 # Async session factory
 AsyncSessionLocal = async_sessionmaker(
-    bind=engine,
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
     autocommit=False,
     autoflush=False,
-    expire_on_commit=False,
 )
 
-# Base for models
+# Base for declarative models
 Base = declarative_base()
 
+# Dependency for FastAPI
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Async database session dependency for FastAPI endpoints"""
+    """Async database session dependency"""
     async with AsyncSessionLocal() as session:
         try:
             yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
         finally:
             await session.close()
