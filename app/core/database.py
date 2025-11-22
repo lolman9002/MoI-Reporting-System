@@ -4,9 +4,9 @@ from typing import Generator
 import urllib.parse
 import logging
 
-from app.core.config import get_settings
+from app.core.config import get_settings  # ✅ FIXED: Import function
 
-settings = get_settings()
+settings = get_settings()  # ✅ FIXED: Call function to get settings
 logger = logging.getLogger(__name__)
 
 # ==========================================
@@ -69,7 +69,7 @@ if settings.SQLALCHEMY_DATABASE_URI_ANALYTICS:
             pool_size=3,
             max_overflow=5,
             pool_recycle=3600,
-            echo=False  # Less verbose for analytics
+            echo=False
         )
         
         SessionLocalAnalytics = sessionmaker(
@@ -94,25 +94,19 @@ BaseAnalytics = declarative_base()
 # ==========================================
 
 def get_db_ops() -> Generator[Session, None, None]:
-    """
-    Dependency for HOT path (Submitting reports, status updates).
-    Usage: db: Session = Depends(get_db_ops)
-    """
+    """Dependency for HOT path (Operations DB)"""
     db = SessionLocalOps()
     try:
         yield db
-        db.commit()  # Auto-commit on success
+        db.commit()
     except Exception:
-        db.rollback()  # Rollback on error
+        db.rollback()
         raise
     finally:
         db.close()
 
 def get_db_analytics() -> Generator[Session, None, None]:
-    """
-    Dependency for COLD path (Admin Dashboard, Exports).
-    Usage: db: Session = Depends(get_db_analytics)
-    """
+    """Dependency for COLD path (Analytics DB)"""
     if not SessionLocalAnalytics:
         raise RuntimeError(
             "Analytics database not configured. "
@@ -134,7 +128,6 @@ def get_db_analytics() -> Generator[Session, None, None]:
 def test_database_connections():
     """Test both database connections"""
     try:
-        # Test Operations DB
         db_ops = SessionLocalOps()
         db_ops.execute("SELECT 1")
         db_ops.close()
@@ -143,7 +136,6 @@ def test_database_connections():
         logger.error(f"✗ Operations DB connection failed: {e}")
         raise
     
-    # Test Analytics DB (optional)
     if SessionLocalAnalytics:
         try:
             db_analytics = SessionLocalAnalytics()
