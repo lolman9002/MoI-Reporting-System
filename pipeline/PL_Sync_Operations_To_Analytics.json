@@ -193,10 +193,15 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "new one",
+					"storedProcedureName": "new procedure",
 					"storedProcedureParameters": {
-						"undefined": {
-							"value": ""
+						"LastExtractedValue": {
+							"value": "@{activity('Lookup_New_Watermark').output.firstRow.NewWatermark}",
+							"type": "Datetime"
+						},
+						"TableName": {
+							"value": "\"Report\"",
+							"type": "String"
 						}
 					}
 				},
