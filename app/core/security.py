@@ -7,7 +7,7 @@ from app.core.config import get_settings
 settings = get_settings()
 
 # Context for hashing passwords (bcrypt)
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """

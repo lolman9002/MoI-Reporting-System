@@ -4,23 +4,25 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db_ops
 from app.api.v1.auth import get_current_user
 from app.services.user_service import UserService
-from app.schemas.user import UserResponse, UserUpdate, UserRole
+from app.models.user import User
+from app.schemas.user import UserResponse, UserRoleUpdate, UserRole # <--- Changed UserUpdate to UserRoleUpdate
 
 router = APIRouter()
 
 @router.put("/{user_id}/role", response_model=UserResponse)
 def assign_role(
     user_id: str,
-    role_data: UserUpdate,
+    role_data: UserRoleUpdate, # <--- This must be UserRoleUpdate to have the 'role' attribute
     db: Session = Depends(get_db_ops),
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Assign a role to a user (e.g., promote Citizen to Officer).
     **Requirement:** Requester must be an ADMIN.
     """
     # 1. Enforce RBAC (Role Based Access Control)
-    if current_user.role != UserRole.ADMIN:
+    # Admin role check (string or enum comparison)
+    if current_user.role != "admin" and current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized. Admin privileges required."

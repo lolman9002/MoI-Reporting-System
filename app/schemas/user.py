@@ -25,7 +25,7 @@ class UserLogin(BaseModel):
     password: str
 
 # Role Update Input (For Admin dashboard)
-class UserUpdate(BaseModel):
+class UserRoleUpdate(BaseModel):
     role: UserRole
 
 # Output Response (Sanitized - No Passwords)
