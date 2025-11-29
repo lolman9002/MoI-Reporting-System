@@ -86,4 +86,5 @@ def login_access_token(
     
     return {
         "user_id": user.userId 
+        "role": user.role
     }
