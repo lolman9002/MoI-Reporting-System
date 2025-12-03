@@ -3,10 +3,12 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 import csv
 import io
+from typing import List 
 
 from app.core.database import get_db_analytics
 from app.services.analytics_service import AnalyticsService
-from app.schemas.analytics import DashboardStatsResponse , MonthlyCategoryCount
+from app.schemas.analytics import DashboardStatsResponse , MonthlyCategoryCount , UserDemographicResponse ,UserListResponse
+
 
 router = APIRouter()
 
@@ -128,4 +130,75 @@ def get_hot_monthly_breakdown(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch hot monthly breakdown: {str(e)}"
+        )
+
+
+
+@router.get(
+    "/dashboard/users/demographic-breakdown",
+    response_model=List[UserDemographicResponse],
+    summary="Get User Demographic Breakdown for Dashboard"
+)
+def get_user_demographic_breakdown(
+    db: Session = Depends(get_db_analytics)
+):
+    """
+    Get user breakdown by role, anonymity status, and account age segments.
+    This data helps understand user composition and growth patterns.
+    """
+    try:
+        rows = AnalyticsService.get_user_demographic_breakdown(db)
+        
+        data = [
+            UserDemographicResponse(
+                role=row.role,
+                is_anonymous=row.isAnonymous,
+                account_age_segment=row.account_age_segment,
+                user_count=row.user_count
+            )
+            for row in rows
+        ]
+        
+        return data
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get user demographic breakdown: {str(e)}"
+        )
+
+@router.get(
+    "/users/list",
+    summary="Get All Users List"
+)
+def get_all_users_list(
+    db: Session = Depends(get_db_analytics)
+):
+    """
+    Get list of all users in the system.
+    Exact same pattern as cold/hot monthly breakdown endpoints.
+    """
+    try:
+        # Direct call to service method - identical pattern to your analytics
+        rows = AnalyticsService.get_all_users_list(db)
+        
+        # Convert tuples to list of dictionaries - identical to your pattern
+        data = [
+            {
+                "user_id": row.userId,
+                "email": row.email,
+                "phone_number": row.phoneNumber,
+                "role": row.role,
+                "is_anonymous": row.isAnonymous,
+                "created_at": row.createdAt,
+                "hashed_device_id": row.hashedDeviceId,
+                "password_hash": row.passwordHash
+            }
+            for row in rows
+        ]
+        
+        return data
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get users list: {str(e)}"
         )
